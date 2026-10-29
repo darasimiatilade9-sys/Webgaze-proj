@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import Logo from './Logo.jsx'
+import useHashLink from '../lib/useHashLink.js'
 
 const SERVICE_LINKS = [
   { label: 'Website Design & Development', href: '#services' },
@@ -13,7 +15,7 @@ const COMPANY_LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'About', href: '#about' },
   { label: 'Services', href: '#services' },
-  { label: 'Projects', href: '#projects' },
+  { label: 'Projects', to: '/projects' },
   { label: 'Insights', href: '#insights' },
 ]
 
@@ -48,13 +50,15 @@ const ArrowRight = () => (
 )
 
 const Footer = () => {
+  const handleHash = useHashLink()
+
   return (
     <footer className="bg-[#0c0c0e] pt-16 pb-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1.15fr]">
           {/* Brand */}
           <div>
-            <a href="#home" className="inline-block">
+            <a href="#home" onClick={(event) => handleHash(event, '#home')} className="inline-block">
               <Logo />
             </a>
             <p className="mt-6 max-w-[280px] text-[15px] leading-relaxed text-gray-400">
@@ -85,7 +89,11 @@ const Footer = () => {
             <ul className="mt-6 space-y-3">
               {SERVICE_LINKS.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-[15px] text-gray-400 transition-colors duration-200 hover:text-white">
+                  <a
+                    href={link.href}
+                    onClick={(event) => handleHash(event, link.href)}
+                    className="text-[15px] text-gray-400 transition-colors duration-200 hover:text-white"
+                  >
                     {link.label}
                   </a>
                 </li>
@@ -99,9 +107,22 @@ const Footer = () => {
             <ul className="mt-6 space-y-3">
               {COMPANY_LINKS.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-[15px] text-gray-400 transition-colors duration-200 hover:text-white">
-                    {link.label}
-                  </a>
+                  {link.to ? (
+                    <Link
+                      to={link.to}
+                      className="text-[15px] text-gray-400 transition-colors duration-200 hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={(event) => handleHash(event, link.href)}
+                      className="text-[15px] text-gray-400 transition-colors duration-200 hover:text-white"
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

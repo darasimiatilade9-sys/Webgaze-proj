@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 /* Placeholder project thumbnails — abstract website/device mockups.
    Swap for real project screenshots when available. */
@@ -219,13 +220,13 @@ const Projects = () => {
             </p>
           </div>
 
-          <a
-            href="#projects"
+          <Link
+            to="/projects"
             className="group inline-flex w-fit items-center gap-3 rounded-full border border-white/25 px-8 py-4 text-[13px] font-bold uppercase tracking-[0.15em] text-white transition-colors duration-200 hover:border-white/60 hover:bg-white/5"
           >
             See All Projects
             <ArrowUpRight />
-          </a>
+          </Link>
         </div>
       </div>
 

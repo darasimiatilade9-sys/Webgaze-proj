@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import Logo from './Logo.jsx'
+import useHashLink from '../lib/useHashLink.js'
 
 /* --- Service icons (inline SVG, stroke-based) --- */
 const LayoutIcon = () => (
@@ -128,7 +130,7 @@ const NAV_LINKS = [
       },
     ],
   },
-  { label: 'Projects', href: '#projects' },
+  { label: 'Projects', to: '/projects' },
   { label: 'Insights', href: '#insights' },
   { label: 'Contact', href: '#contact' },
 ]
@@ -153,10 +155,29 @@ const ChevronDown = () => (
 const Navbar = () => {
   const [active, setActive] = useState('Home')
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { pathname } = useLocation()
+  const handleHash = useHashLink()
+
+  const onProjectsPage = pathname === '/projects'
+
+  /* Projects is highlighted whenever its route is open; the other links
+     keep their click-based highlight while browsing the home page.
+     A stale "Projects" click (e.g. returning home via the logo) falls back
+     to highlighting Home instead. */
+  const isActiveLink = (label) => {
+    if (onProjectsPage) return label === 'Projects'
+    if (active === 'Projects') return label === 'Home'
+    return active === label
+  }
 
   const handleNavigate = (label) => {
     setActive(label)
     setMobileOpen(false)
+  }
+
+  const handleHashClick = (event, href, label) => {
+    handleNavigate(label)
+    handleHash(event, href)
   }
 
   return (
@@ -170,26 +191,26 @@ const Navbar = () => {
 
       <nav className="relative mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-        <a
-          href="#home"
+        <Link
+          to="/"
           onClick={() => handleNavigate('Home')}
           className="relative z-10 shrink-0"
         >
           <Logo />
-        </a>
+        </Link>
 
         {/* Center pill (desktop) */}
         <div className="hidden lg:block">
           <ul className="flex items-center rounded-full border border-white/10 bg-white/[0.03] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             {NAV_LINKS.map((link) => {
-              const isActive = active === link.label
+              const isActive = isActiveLink(link.label)
 
               if (link.children) {
                 return (
                   <li key={link.label} className="group/nav relative">
                     <a
                       href={link.href}
-                      onClick={() => handleNavigate(link.label)}
+                      onClick={(event) => handleHashClick(event, link.href, link.label)}
                       aria-current={isActive ? 'page' : undefined}
                       className={`flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8102a]/60 ${
                         isActive
@@ -221,17 +242,34 @@ const Navbar = () => {
                 )
               }
 
+              const linkClass = `block cursor-pointer rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8102a]/60 ${
+                isActive
+                  ? 'bg-[#e8102a] text-white shadow-[0_4px_16px_rgba(232,16,42,0.45)]'
+                  : 'text-[#d4d4d8] hover:bg-white/5 hover:text-white'
+              }`
+
+              if (link.to) {
+                return (
+                  <li key={link.label}>
+                    <Link
+                      to={link.to}
+                      onClick={() => handleNavigate(link.label)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={linkClass}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                )
+              }
+
               return (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    onClick={() => handleNavigate(link.label)}
+                    onClick={(event) => handleHashClick(event, link.href, link.label)}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`block cursor-pointer rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8102a]/60 ${
-                      isActive
-                        ? 'bg-[#e8102a] text-white shadow-[0_4px_16px_rgba(232,16,42,0.45)]'
-                        : 'text-[#d4d4d8] hover:bg-white/5 hover:text-white'
-                    }`}
+                    className={linkClass}
                   >
                     {link.label}
                   </a>
@@ -244,6 +282,7 @@ const Navbar = () => {
         {/* CTA (desktop) */}
         <a
           href="#proposal"
+          onClick={(event) => handleHashClick(event, '#proposal', 'Proposal')}
           className="relative z-10 hidden shrink-0 rounded-full bg-[#e8102a] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(232,16,42,0.4)] transition-all duration-200 hover:bg-[#ff1d36] hover:shadow-[0_14px_36px_rgba(232,16,42,0.55)] sm:inline-flex"
         >
           Request a Proposal
@@ -282,18 +321,35 @@ const Navbar = () => {
         <div className="absolute inset-x-0 top-full border-b border-white/10 bg-[#0a0a0b] px-5 pb-6 pt-2 shadow-[0_20px_40px_rgba(0,0,0,0.5)] lg:hidden">
           <ul className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => {
-              const isActive = active === link.label
+              const isActive = isActiveLink(link.label)
+              const mobileClass = `flex items-center justify-between rounded-xl px-4 py-2.5 text-[15px] font-medium transition-colors ${
+                isActive
+                  ? 'bg-[#e8102a] text-white'
+                  : 'text-[#d4d4d8] hover:bg-white/5 hover:text-white'
+              }`
+
+              if (link.to) {
+                return (
+                  <li key={link.label}>
+                    <Link
+                      to={link.to}
+                      onClick={() => handleNavigate(link.label)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={mobileClass}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                )
+              }
+
               return (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    onClick={() => handleNavigate(link.label)}
+                    onClick={(event) => handleHashClick(event, link.href, link.label)}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-[15px] font-medium transition-colors ${
-                      isActive
-                        ? 'bg-[#e8102a] text-white'
-                        : 'text-[#d4d4d8] hover:bg-white/5 hover:text-white'
-                    }`}
+                    className={mobileClass}
                   >
                     {link.label}
                     {link.children && <ChevronDown />}
@@ -323,7 +379,7 @@ const Navbar = () => {
 
           <a
             href="#proposal"
-            onClick={() => setMobileOpen(false)}
+            onClick={(event) => handleHashClick(event, '#proposal', 'Proposal')}
             className="mt-4 flex justify-center rounded-full bg-[#e8102a] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(232,16,42,0.4)] sm:hidden"
           >
             Request a Proposal
